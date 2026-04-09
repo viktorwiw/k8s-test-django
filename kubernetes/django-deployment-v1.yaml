@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-app-deployment
+  labels:
+    app: main
+spec:
+  selector:
+    matchLabels:
+      app: main
+  template:
+    metadata:
+      labels:
+        app: main
+        owner: ViktorShishkalov
+    spec:
+      containers:
+        - name: container-nginx
+          image: nginx-unit-django-app:1.0
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80
+          env:
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: django-secrets
+                  key: SECRET_KEY
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: django-secrets
+                  key: DATABASE_URL
+            - name: DEBUG
+              valueFrom:
+                secretKeyRef:
+                  name: django-secrets
+                  key: DEBUG
+            - name: ALLOWED_HOSTS
+              valueFrom:
+                secretKeyRef:
+                  name: django-secrets
+                  key: ALLOWED_HOSTS
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: django-service
+spec:
+  type: NodePort
+  selector:
+    app: main
+    owner: ViktorShishkalov
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

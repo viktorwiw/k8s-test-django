@@ -12,6 +12,9 @@
 
 Вместе со свежей версией Docker к вам на компьютер автоматически будет установлен Docker Compose. Дальнейшие инструкции будут его активно использовать.
 
+Если необходимо протестировать приложение в Kubernetes необходимо также установить [Kubernetes](https://kubernetes.io/ru/docs/tasks/tools/install-kubectl/) и [Minikub](https://minikube.sigs.k8s.io/docs/start/?arch=%2Fmacos%2Fx86-64%2Fstable%2Fbinary+download) для тестов
+
+
 ## Как запустить сайт для локальной разработки
 
 Запустите базу данных и сайт:
@@ -75,3 +78,92 @@ $ docker compose build web
 `ALLOWED_HOSTS` -- настройка Django со списком разрешённых адресов. Если запрос прилетит на другой адрес, то сайт ответит ошибкой 400. Можно перечислить несколько адресов через запятую, например `127.0.0.1,192.168.0.1,site.test`. [Документация Django](https://docs.djangoproject.com/en/3.2/ref/settings/#allowed-hosts).
 
 `DATABASE_URL` -- адрес для подключения к базе данных PostgreSQL. Другие СУБД сайт не поддерживает. [Формат записи](https://github.com/jacobian/dj-database-url#url-schema).
+
+
+## Запуск приложения в кластере Minikube
+
+Для локальной разработки необходимо поднять на хосте БД с помощью docker compose
+
+Создайте в корне проекта файл **.env**
+
+```
+POSTGRES_DB=you_name_db
+POSTGRES_USER=you_user
+POSTGRES_PASSWORD=you_pasword
+```
+
+```bash
+docker compose up -d db
+```
+
+Запустить minikube кластер
+
+```
+minikube start
+```
+
+Проверяем запуск
+
+```
+kubectl get nodes
+```
+
+В каталоге **kubernetes** cоздаем файл **secret.yaml** и заполняем переменные **SECRET_KEY**, **DATABASE_URL**, **DEBUG**, **ALLOWED_HOSTS** предварительно конвертируем в формат **base64**
+
+где:
+    **DATABASE_URL** в формате **DB_URL=postgres://you_user:password@IP_host:5432/name_db**
+IP_host можно получить в настройках вашего соединения
+
+```bash
+echo -n 'you_env' | base64
+```
+Полученное значение вставляем в манифест секрета
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: django-secrets
+type: Opaque
+data:
+  SECRET_KEY: "bXktc3VwZXItc2VjcmV0LWtleQ=="
+  DATABASE_URL: "cG9zdGdyZXM6Ly9taW91c2VyOjIwMThAMTkyLjE2OC4wLjEzOjU0MzIvbWluaWN1YmVfZGI="
+  DEBUG: 'RmFsc2U='
+  ALLOWED_HOSTS: "Kg=="
+```
+
+Применяем манифест
+
+```bash
+cd kubernetes
+kubectl apply -f secret.yaml
+```
+
+Запускаем наш сайт командой
+
+```bash
+kubectl apply -f django-deployment-v1.yaml
+```
+
+Получаем имя pod
+
+```bash
+kubectl get pods
+```
+Применяем миграции и создаем суперпользователя
+
+```bash
+kubectl exec -it django-shell -- /bin/bash
+./manage.py migrate
+./manage.py createsuperuser
+./
+exit
+```
+
+Запускаем сайт
+
+```bash
+minikube service django-service
+```
+
+Проверяем что нащ сайт запустился.
