@@ -107,6 +107,11 @@ minikube start
 ```
 kubectl get nodes
 ```
+Перед запуском приложения создадим контролер сервиса Ingress в нашем minikube кластере
+
+```
+minikube addons enable ingress
+```
 
 В каталоге **kubernetes** cоздаем файл **secret.yaml** и заполняем переменные **SECRET_KEY**, **DATABASE_URL**, **DEBUG**, **ALLOWED_HOSTS** предварительно конвертируем в формат **base64**
 
@@ -160,10 +165,22 @@ kubectl exec -it django-shell -- /bin/bash
 exit
 ```
 
-Запускаем сайт
+Запускаем наше приложения внутри кластера
 
 ```bash
-minikube service django-service
+minikube service django-service --url
+```
+В манифесте **ingress.yaml** замените в строке **- host: myapp.local** на ваш тестовый домен, затем добавьте ваш домен в файл (host)[https://help.reg.ru/support/dns-servery-i-nastroyka-zony/rabota-s-dns-serverami/fayl-hosts-gde-nakhoditsya-i-kak-yego-izmenit]
+
+Применим манифест для Ingress и проверим что он создан
+
+```bash
+kubectl apply -f ingress.yaml
+kubectl get ingress
 ```
 
-Проверяем что нащ сайт запустился.
+Откроем тунель для миникуб кластера, чтобы увидеть наше приложение в браузере, при переходе по нашему домену
+
+```bash
+minikube tunnel
+```
