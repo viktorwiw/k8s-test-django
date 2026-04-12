@@ -184,3 +184,21 @@ kubectl get ingress
 ```bash
 minikube tunnel
 ```
+
+---
+### Регулярное удаление сессий
+
+Для регулярной очистки сессий, примените манифест **django-clearsessions.yaml**, настроенный на регулярный запуск задачи 1 раз в месяц
+
+```bash
+kubectl apply -f django-clearsessions.yaml
+```
+
+Для проверки задачи, выполните по очереди команды
+
+```bash
+kubectl create job --from=cronjob/django-clearsessions django-clearsessions-test
+kubectl get jobs
+kubectl get pods
+kubectl logs <pod-name>
+```
