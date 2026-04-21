@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ubuntu-pg-test-dev
+  namespace: edu-victor-shishkalov
+spec:
+  containers:
+  - name: ubuntu-pg-test-dev
+    image: postgres:17
+    command: ["sleep", "infinity"]
+    volumeMounts:
+      - name: pg-ssl-cert-volume
+        mountPath: /root/.postgresql
+
+  volumes:
+    - name: pg-ssl-cert-volume
+      secret:
+        secretName: pg-ssl-cert
+        defaultMode: 0644
