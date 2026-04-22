@@ -1,0 +1,45 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: job-django-migrate
+  namespace: edu-victor-shishkalov
+spec:
+  template:
+    spec:
+      containers:
+        - name: job-migrate
+          image: wiwikin/dev-django-site:59720875
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: pg-ssl-cert-volume
+              mountPath: /root/.postgresql
+          env:
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: django-secrets
+                  key: SECRET_KEY
+            - name: DEBUG
+              valueFrom:
+                secretKeyRef:
+                  name: django-secrets
+                  key: DEBUG
+            - name: ALLOWED_HOSTS
+              valueFrom:
+                secretKeyRef:
+                  name: django-secrets
+                  key: ALLOWED_HOSTS
+
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: postgres
+                  key: dsn
+          command: ['sh', '-c', './manage.py migrate --noinput']
+      restartPolicy: Never
+
+      volumes:
+        - name: pg-ssl-cert-volume
+          secret:
+            secretName: pg-ssl-cert
+            defaultMode: 0644
