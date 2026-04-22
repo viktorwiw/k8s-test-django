@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-app-deployment
+  labels:
+    app: main
+spec:
+  selector:
+    matchLabels:
+      app: main
+  template:
+    metadata:
+      labels:
+        app: main
+        owner: ViktorShishkalov
+    spec:
+      containers:
+        - name: container-nginx-django
+          image: wiwikin/dev-django-site:59720875
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: pg-ssl-cert-volume
+              mountPath: /root/.postgresql
+          env:
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: django-secrets
+                  key: SECRET_KEY
+            - name: DEBUG
+              valueFrom:
+                secretKeyRef:
+                  name: django-secrets
+                  key: DEBUG
+            - name: ALLOWED_HOSTS
+              valueFrom:
+                secretKeyRef:
+                  name: django-secrets
+                  key: ALLOWED_HOSTS
+
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: postgres
+                  key: dsn
+
+        volumes:
+          - name: pg-ssl-cert-volume
+            secret:
+              secretName: pg-ssl-cert
+              defaultMode: 0644
