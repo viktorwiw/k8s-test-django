@@ -36,6 +36,10 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 USE_X_FORWARDED_HOST = True
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://edu-victor-shishkalov.yc-sirius-dev.pelid.team'
+]
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -82,6 +86,11 @@ WSGI_APPLICATION = 'webapp.wsgi.application'
 
 DATABASES = {
     'default': env.dj_db_url('DATABASE_URL', 'postgres://...'),
+}
+
+DATABASES['default']['OPTIONS'] = {
+    'sslmode': 'verify-full',
+    'sslrootcert': '/certs/root.crt',
 }
 
 
