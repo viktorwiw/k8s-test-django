@@ -91,6 +91,7 @@ DATABASES = {
 DATABASES['default']['OPTIONS'] = {
     'sslmode': 'verify-full',
     'sslrootcert': '/certs/root.crt',
+    'sslcertmode': 'disable',
 }
 
 
