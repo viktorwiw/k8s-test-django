@@ -16,12 +16,12 @@ spec:
     spec:
       containers:
         - name: container-nginx-django
-          image: wiwikin/dev-django-site:59720875
+          image: wiwikin/dev-django-site:d66b7d83
           ports:
             - containerPort: 80
           volumeMounts:
             - name: pg-ssl-cert-volume
-              mountPath: /root/.postgresql
+              mountPath: /certs
           env:
             - name: SECRET_KEY
               valueFrom:
@@ -45,8 +45,8 @@ spec:
                   name: postgres
                   key: dsn
 
-        volumes:
-          - name: pg-ssl-cert-volume
-            secret:
-              secretName: pg-ssl-cert
-              defaultMode: 0644
+      volumes:
+         - name: pg-ssl-cert-volume
+           secret:
+             secretName: pg-ssl-cert
+             defaultMode: 0644

@@ -8,11 +8,11 @@ spec:
     spec:
       containers:
         - name: job-createsuperuser
-          image: wiwikin/dev-django-site:59720875
+          image: wiwikin/dev-django-site:d66b7d83
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - name: pg-ssl-cert-volume
-              mountPath: /root/.postgresql
+              mountPath: /certs
           env:
             - name: SECRET_KEY
               valueFrom:
